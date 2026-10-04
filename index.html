@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Défi 20 €">
+<title>Défi 20 €</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(145deg,#111827,#312e81);color:#fff;min-height:100vh}button,input{font:inherit}.app{max-width:700px;margin:auto;min-height:100vh;padding:22px 16px 30px}.card{background:rgba(255,255,255,.11);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.16);border-radius:24px;padding:22px;box-shadow:0 15px 40px rgba(0,0,0,.25)}h1{font-size:38px;margin:4px 0 8px;text-align:center}h2{margin:5px 0 15px}.sub{text-align:center;opacity:.85;margin-bottom:24px}.row{display:flex;gap:10px}.row>*{flex:1}input{width:100%;padding:14px;border:0;border-radius:14px;background:#fff;color:#111827;margin-bottom:10px}button{border:0;border-radius:16px;padding:15px 18px;font-weight:800;cursor:pointer;touch-action:manipulation}.primary{background:#fff;color:#111827;width:100%;margin-top:10px}.secondary{background:rgba(255,255,255,.14);color:#fff}.danger{background:#ef4444;color:white}.players{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.player{padding:14px;border-radius:18px;background:rgba(255,255,255,.09);text-align:center}.money{font-size:28px;font-weight:900}.active{outline:3px solid #fff}.lot{font-size:30px;font-weight:900;text-align:center;margin:10px 0 18px}.round{text-align:center;opacity:.8}.bid{text-align:center;font-size:44px;font-weight:900;margin:10px 0}.turn{text-align:center;font-weight:800;margin-bottom:16px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions button{font-size:18px}.history{margin-top:18px;max-height:180px;overflow:auto}.item{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:14px}.winner{font-size:20px;text-align:center;margin:12px 0}.hidden{display:none}.small{font-size:13px;opacity:.75;text-align:center;margin-top:15px}.results{display:grid;gap:12px}.result{background:rgba(255,255,255,.1);padding:16px;border-radius:18px}.result h3{margin:0 0 7px}.lots{opacity:.9;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+<section id="start" class="card">
+<h1>💶 Défi 20 €</h1><div class="sub">Qui réussira à obtenir les meilleurs lots avec seulement 20 € ?</div>
+<input id="p1" placeholder="Nom du joueur 1" maxlength="18" value="Joueur 1">
+<input id="p2" placeholder="Nom du joueur 2" maxlength="18" value="Joueur 2">
+<button class="primary" onclick="startGame()">🎮 Commencer la partie</button>
+<div class="small">15 lots • enchères de 1 € • 20 € chacun</div>
+</section>
+
+<section id="game" class="hidden">
+<div class="card">
+<div class="round" id="round"></div>
+<div class="lot" id="lot"></div>
+<div class="players">
+<div id="box0" class="player"><b id="name0"></b><div class="money" id="money0">20 €</div></div>
+<div id="box1" class="player"><b id="name1"></b><div class="money" id="money1">20 €</div></div>
+</div>
+<div class="turn" id="turn"></div>
+<div class="bid" id="bid">0 €</div>
+<div class="actions"><button class="primary" id="raise" onclick="raise()">💶 +1 €</button><button class="secondary" onclick="pass()">✋ Passer</button></div>
+<div class="history" id="history"></div>
+</div>
+</section>
+
+<section id="end" class="card hidden">
+<h1>🏆 Résultats</h1><div class="sub">La partie est terminée !</div>
+<div class="results" id="results"></div>
+<button class="primary" onclick="location.reload()">🔄 Nouvelle partie</button>
+</section>
+</div>
+<script>
+const LOTS=["🍕 Une pizza géante","🍔 Un burger XXL","🏝️ Une île privée","🏠 Une villa de rêve","🏢 Un immeuble","🚗 Une voiture de sport","🎮 Une console de jeu","🛴 Une trottinette électrique","🎁 Un énorme cadeau mystère","🍫 Une montagne de chocolat","🏖️ Une journée sur une plage paradisiaque","🎟️ Une place VIP","🐶 Un chien robot","🛸 Un mini vaisseau spatial","💎 Un coffre rempli de diamants factices"];
+let players=[],money=[],round=0,currentLot='',bid=0,turn=0,lastBidder=0,wins=[[],[]],used=[];
+function $(id){return document.getElementById(id)}
+function startGame(){players=[$('p1').value.trim()||'Joueur 1',$('p2').value.trim()||'Joueur 2'];money=[20,20];round=0;wins=[[],[]];used=[];$('start').classList.add('hidden');$('game').classList.remove('hidden');nextRound()}
+function nextRound(){if(round>=LOTS.length){endGame();return}round++;let available=LOTS.filter((_,i)=>!used.includes(i));let idx=Math.floor(Math.random()*available.length);currentLot=available[idx];used.push(LOTS.indexOf(currentLot));bid=0;turn=(round-1)%2;lastBidder=turn;render();}
+function render(){$('round').textContent=`Manche ${round} / ${LOTS.length}`;$('lot').textContent=currentLot;$('name0').textContent=players[0];$('name1').textContent=players[1];$('money0').textContent=money[0]+' €';$('money1').textContent=money[1]+' €';$('box0').classList.toggle('active',turn===0);$('box1').classList.toggle('active',turn===1);$('turn').textContent=`Au tour de ${players[turn]}`;$('bid').textContent=bid+' €';$('raise').disabled=money[turn] <= bid;$('raise').style.opacity=$('raise').disabled?.45:1}
+function raise(){if(money[turn]<=bid)return;bid++;lastBidder=turn;turn=1-turn;render();}
+function pass(){let winner=lastBidder;let price=bid;if(bid===0)winner=1-turn; if(price>money[winner])price=money[winner];money[winner]-=price;wins[winner].push(`${currentLot}${price?` — ${price} €`:" — gratuit"}`);$('history').innerHTML=`<div class="item">${currentLot} → <b>${players[winner]}</b> (${price} €)</div>`+$('history').innerHTML;setTimeout(nextRound,250)}
+function endGame(){ $('game').classList.add('hidden');$('end').classList.remove('hidden');$('results').innerHTML=players.map((p,i)=>`<div class="result"><h3>👤 ${p} — ${money[i]} € restants</h3><div class="lots">${wins[i].length?wins[i].map(x=>'• '+x).join('<br>'):'Aucun lot'}</div></div>`).join('') }
+</script>
+</body></html>
